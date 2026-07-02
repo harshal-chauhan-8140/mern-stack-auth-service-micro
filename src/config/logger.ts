@@ -13,7 +13,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === 'development' ? false : true,
+            silent: config.env === 'test',
         }),
         new winston.transports.File({
             level: 'info',
@@ -24,7 +24,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === 'development' ? false : true,
+            silent: config.env === 'test',
         }),
         new winston.transports.Console({
             level: 'info',
@@ -33,7 +33,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === 'development' ? false : true,
+            silent: config.env === 'test',
         }),
     ],
 })
