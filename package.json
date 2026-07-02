@@ -1,19 +1,21 @@
 {
-  "name": "auth-service",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "harshal",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "node --watch src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "devDependencies": {
-    "@types/node": "^26.1.0",
-    "typescript": "^6.0.3"
-  }
+    "name": "auth-service",
+    "version": "1.0.0",
+    "description": "",
+    "license": "ISC",
+    "author": "harshal",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "dev": "node --watch src/server.ts",
+        "format:check": "prettier --check .",
+        "format:fix": "prettier --write ."
+    },
+    "devDependencies": {
+        "@types/node": "^26.1.0",
+        "prettier": "3.9.4",
+        "typescript": "^6.0.3"
+    }
 }
