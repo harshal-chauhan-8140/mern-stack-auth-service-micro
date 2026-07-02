@@ -4,14 +4,14 @@ import express, {
     type Response,
 } from 'express'
 import logger from './config/logger.ts'
-import createHttpError, { HttpError } from 'http-errors'
+import { HttpError } from 'http-errors'
 
 const app = express()
 
-app.get('/', (req, res, next) => {
-    const err = createHttpError(401, 'you cannot access this route')
-    next(err)
-    // res.send('Welcome to the API')
+app.get('/', (req, res) => {
+    res.status(200).json({
+        msg: 'Welcome to the API',
+    })
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
