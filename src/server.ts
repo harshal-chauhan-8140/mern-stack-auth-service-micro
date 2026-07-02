@@ -1,5 +1,3 @@
-function welcome(name: string): void {
-    console.log(`Welcome    ${name}`)
-}
+import { config } from './config/index.ts'
 
-welcome('John')
+console.log(config.port)
