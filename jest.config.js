@@ -1,9 +1,9 @@
-import { createDefaultEsmPreset } from "ts-jest";
+import { createDefaultEsmPreset } from 'ts-jest'
 
-const presetConfig = createDefaultEsmPreset();
+const presetConfig = createDefaultEsmPreset()
 
 /** @type {import("jest").Config} **/
 export default {
-  ...presetConfig,
-  testEnvironment: "node",
-};
+    ...presetConfig,
+    testEnvironment: 'node',
+}
