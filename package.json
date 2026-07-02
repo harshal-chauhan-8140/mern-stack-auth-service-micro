@@ -11,11 +11,16 @@
         "start": "node dist/server.js",
         "dev": "node --watch src/server.ts",
         "format:check": "prettier --check .",
-        "format:fix": "prettier --write ."
+        "format:fix": "prettier --write .",
+        "lint:check": "eslint .",
+        "lint:fix": "eslint --fix ."
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/node": "^26.1.0",
+        "eslint": "^10.6.0",
         "prettier": "3.9.4",
-        "typescript": "^6.0.3"
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.62.1"
     }
 }
