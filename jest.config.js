@@ -6,4 +6,5 @@ const presetConfig = createDefaultEsmPreset()
 export default {
     ...presetConfig,
     testEnvironment: 'node',
+    verbose: true
 }

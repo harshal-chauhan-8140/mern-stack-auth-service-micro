@@ -13,7 +13,7 @@
         "target": "esnext",
         "types": [],
         // For nodejs:
-        // "lib": ["esnext"],
+        "lib": ["es6"],
         // "types": ["node"],
         // and npm install -D @types/node
 
@@ -33,6 +33,8 @@
         // "noUnusedParameters": true,
         // "noFallthroughCasesInSwitch": true,
         // "noPropertyAccessFromIndexSignature": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
 
         // Recommended Options
         "strict": true,
