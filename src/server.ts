@@ -3,9 +3,9 @@ import { config } from "./config/index.ts"
 import logger from "./config/logger.ts"
 
 function startServer() {
-    app.listen(config.port, () => {
+    app.listen(config.PORT, () => {
         logger.info(
-            `Server is running on port ${config.port} in ${config.env} mode`,
+            `Server is running on port ${config.PORT} in ${config.NODE_ENV} mode`,
         )
     })
 }

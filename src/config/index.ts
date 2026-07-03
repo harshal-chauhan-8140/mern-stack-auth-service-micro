@@ -1,10 +1,28 @@
 import { config as dotenvConfig } from "dotenv"
+import path from "path"
+import { fileURLToPath } from "url"
 
-dotenvConfig()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-const { PORT, NODE_ENV } = process.env
+dotenvConfig({
+    path: path.join(__dirname, `../../.env.${process.env.NODE_ENV}`),
+})
+
+function requireEnv(key: string): string {
+    const value = process.env[key]
+    if (value === undefined || value === "") {
+        throw new Error(`Missing required environment variable: ${key}`)
+    }
+    return value
+}
 
 export const config = {
-    port: PORT,
-    env: NODE_ENV,
+    PORT: requireEnv("PORT"),
+    NODE_ENV: requireEnv("NODE_ENV"),
+    DB_HOST: requireEnv("DB_HOST"),
+    DB_PORT: requireEnv("DB_PORT"),
+    DB_USERNAME: requireEnv("DB_USERNAME"),
+    DB_PASSWORD: requireEnv("DB_PASSWORD"),
+    DB_NAME: requireEnv("DB_NAME"),
 }

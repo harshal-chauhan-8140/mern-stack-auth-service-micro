@@ -1,56 +1,57 @@
 {
-  "name": "auth-service",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "harshal",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "nodemon src/server.ts",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --watch --runInBand",
-    "format:check": "prettier --check .",
-    "format:fix": "prettier --write .",
-    "lint:check": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@jest/globals": "^30.4.1",
-    "@types/express": "^5.0.6",
-    "@types/http-errors": "^2.0.5",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.0",
-    "@types/supertest": "^7.2.0",
-    "@types/winston": "^2.4.4",
-    "eslint": "^10.6.0",
-    "husky": "^9.1.7",
-    "jest": "^30.4.2",
-    "lint-staged": "^17.0.8",
-    "nodemon": "^3.1.14",
-    "prettier": "3.9.4",
-    "supertest": "^7.2.2",
-    "ts-jest": "^29.4.11",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "npm run format:fix",
-      "npm run lint:fix"
-    ]
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "http-errors": "^2.0.1",
-    "pg": "^8.22.0",
-    "reflect-metadata": "^0.2.2",
-    "typeorm": "^1.0.0",
-    "winston": "^3.19.0"
-  }
+   "name": "auth-service",
+   "version": "1.0.0",
+   "description": "",
+   "license": "ISC",
+   "author": "harshal",
+   "type": "module",
+   "main": "index.js",
+   "scripts": {
+      "build": "tsc",
+      "start": "cross-env NODE_ENV=production ts-node src/index.ts",
+      "dev": "cross-env NODE_ENV=development nodemon src/server.ts",
+      "test": "NODE_OPTIONS=--experimental-vm-modules jest --watch --runInBand",
+      "format:check": "prettier --check .",
+      "format:fix": "prettier --write .",
+      "lint:check": "eslint .",
+      "lint:fix": "eslint --fix .",
+      "prepare": "husky",
+      "typeorm": "typeorm-ts-node-commonjs"
+   },
+   "devDependencies": {
+      "@eslint/js": "^10.0.1",
+      "@jest/globals": "^30.4.1",
+      "@types/express": "^5.0.6",
+      "@types/http-errors": "^2.0.5",
+      "@types/jest": "^30.0.0",
+      "@types/node": "^26.1.0",
+      "@types/supertest": "^7.2.0",
+      "@types/winston": "^2.4.4",
+      "cross-env": "^10.1.0",
+      "eslint": "^10.6.0",
+      "husky": "^9.1.7",
+      "jest": "^30.4.2",
+      "lint-staged": "^17.0.8",
+      "nodemon": "^3.1.14",
+      "prettier": "3.9.4",
+      "supertest": "^7.2.2",
+      "ts-jest": "^29.4.11",
+      "ts-node": "^10.9.2",
+      "typescript": "^6.0.3",
+      "typescript-eslint": "^8.62.1"
+   },
+   "lint-staged": {
+      "*.ts": [
+         "npm run format:fix",
+         "npm run lint:fix"
+      ]
+   },
+   "dependencies": {
+      "dotenv": "^17.4.2",
+      "express": "^5.2.1",
+      "http-errors": "^2.0.1",
+      "reflect-metadata": "^0.2.2",
+      "typeorm": "1.0.0",
+      "winston": "^3.19.0"
+   }
 }
