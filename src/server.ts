@@ -1,6 +1,6 @@
-import app from './app.ts'
-import { config } from './config/index.ts'
-import logger from './config/logger.ts'
+import app from "./app.ts"
+import { config } from "./config/index.ts"
+import logger from "./config/logger.ts"
 
 function startServer() {
     app.listen(config.port, () => {
