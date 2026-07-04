@@ -1,11 +1,24 @@
-import { type Request, type Response } from "express"
+import { type Response } from "express"
+import type { RegisterUserRequest } from "../types/index.ts"
+import { UserService } from "../services/UserService.ts"
 
 export default class AuthController {
-    register(req: Request, res: Response) {
+    userService: UserService
+
+    constructor(userService: UserService) {
+        this.userService = userService
+    }
+
+    async register(req: RegisterUserRequest, res: Response) {
+        const { firstName, lastName, email, password } = req.body
+
+        await this.userService.create(firstName, lastName, email, password)
+
         res.status(201).json({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
+            firstName,
+            lastName,
+            email,
+            password,
         })
     }
 }

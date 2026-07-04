@@ -6,7 +6,7 @@ import express, {
 } from "express"
 import logger from "./config/logger.ts"
 import { HttpError } from "http-errors"
-import authRouter from "./routes/auth.ts"
+import authRouter from "./routes/authRouter.ts"
 
 const app = express()
 app.use(express.json())

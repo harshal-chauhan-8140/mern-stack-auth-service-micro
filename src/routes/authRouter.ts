@@ -5,8 +5,8 @@ import { AppDataSource } from "../data-source.ts"
 import { User } from "../entities/User.ts"
 const router = express.Router()
 
-const userRepository = AppDataSource.getRepository(User)
-const userService = new UserService(userRepository)
+const repository = AppDataSource.getRepository(User)
+const userService = new UserService(repository)
 const authController = new AuthController(userService)
 
 router.post("/register", authController.register.bind(authController))
