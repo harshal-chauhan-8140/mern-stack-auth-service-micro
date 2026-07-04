@@ -8,8 +8,8 @@
    "main": "index.js",
    "scripts": {
       "build": "tsc",
-      "start": "cross-env NODE_ENV=production ts-node src/index.ts",
-      "dev": "cross-env NODE_ENV=development nodemon src/server.ts",
+      "start": "cross-env NODE_ENV=production node --import @swc-node/register/esm-register src/server.ts",
+      "dev": "cross-env NODE_ENV=development nodemon --ext ts --exec \"node --import @swc-node/register/esm-register\" src/server.ts",
       "test": "NODE_OPTIONS=--experimental-vm-modules jest --watch --runInBand",
       "format:check": "prettier --check .",
       "format:fix": "prettier --write .",
@@ -21,6 +21,8 @@
    "devDependencies": {
       "@eslint/js": "^10.0.1",
       "@jest/globals": "^30.4.1",
+      "@swc-node/register": "^1.11.1",
+      "@swc/core": "^1.15.43",
       "@types/express": "^5.0.6",
       "@types/http-errors": "^2.0.5",
       "@types/jest": "^30.0.0",

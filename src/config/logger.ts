@@ -2,7 +2,7 @@ import winston from "winston"
 import { config } from "./index.ts"
 const logger = winston.createLogger({
     level: "info",
-    defaultMeta: { service: "auth-service", env: config.env as string },
+    defaultMeta: { service: "auth-service", env: config.NODE_ENV as string },
     transports: [
         new winston.transports.File({
             level: "error",
@@ -13,7 +13,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === "test",
+            silent: config.NODE_ENV === "test",
         }),
         new winston.transports.File({
             level: "info",
@@ -24,7 +24,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === "test",
+            silent: config.NODE_ENV === "test",
         }),
         new winston.transports.Console({
             level: "info",
@@ -33,7 +33,7 @@ const logger = winston.createLogger({
                 winston.format.simple(),
                 winston.format.timestamp(),
             ),
-            silent: config.env === "test",
+            silent: config.NODE_ENV === "test",
         }),
     ],
 })
