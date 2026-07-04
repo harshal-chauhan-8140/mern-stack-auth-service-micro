@@ -2,6 +2,8 @@ import type { Repository } from "typeorm"
 import { User } from "../entities/User.ts"
 import createHttpError from "http-errors"
 import { Roles } from "../constants/index.ts"
+import bcrypt from "bcrypt"
+
 export class UserService {
     // userRepository: Repository<User>;
 
@@ -16,12 +18,15 @@ export class UserService {
         email: string,
         password: string,
     ) {
+        const saltRound = 10
+        const hashedPassword = await bcrypt.hash(password, saltRound)
+
         try {
             return await this.userRepository.save({
                 firstName,
                 lastName,
                 email,
-                password,
+                password: hashedPassword,
                 role: Roles.CUSTOMER,
             })
         } catch {
