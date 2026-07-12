@@ -1,6 +1,6 @@
 import { type Request } from "express"
 
-export interface UserData {
+export interface UserRegisterData {
     firstName: string
     lastName: string
     email: string
@@ -9,5 +9,14 @@ export interface UserData {
 }
 
 export interface RegisterUserRequest extends Request {
-    body: UserData
+    body: UserRegisterData
+}
+
+export interface UserLoginData {
+    email: string
+    password: string
+}
+
+export interface LoginUserRequest extends Request {
+    body: UserLoginData
 }

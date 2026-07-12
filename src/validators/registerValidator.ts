@@ -21,7 +21,7 @@ export default checkSchema({
     },
     password: {
         trim: true,
-        errorMessage: "Last name is required!",
+        errorMessage: "Password name is required!",
         notEmpty: true,
         isLength: {
             options: {
