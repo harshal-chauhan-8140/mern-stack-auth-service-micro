@@ -19,7 +19,9 @@ export class UserService {
         password: string,
     ) {
         const user = await this.userRepository.findOne({
-            where: { email: email },
+            where: {
+                email: email,
+            },
         })
         if (user) {
             const err = createHttpError(400, "Email already exist")
@@ -50,6 +52,14 @@ export class UserService {
         return await this.userRepository.findOne({
             where: {
                 email: email,
+            },
+        })
+    }
+
+    async findById(id: number) {
+        return await this.userRepository.findOne({
+            where: {
+                id: Number(id),
             },
         })
     }

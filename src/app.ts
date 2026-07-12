@@ -7,9 +7,11 @@ import express, {
 import logger from "./config/logger.ts"
 import { HttpError } from "http-errors"
 import authRouter from "./routes/authRouter.ts"
+import cookieParser from "cookie-parser"
 
 const app = express()
 app.use(express.json())
+app.use(cookieParser())
 
 app.get("/", (req, res) => {
     res.status(200).json({

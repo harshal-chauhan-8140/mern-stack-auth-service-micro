@@ -31,17 +31,19 @@ describe("POST /auth/login", () => {
 
     describe("given all fields", () => {
         it("should return 200 status code", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: userData.password,
+            })
 
             expect(response.statusCode).toBe(200)
         })
 
         it("should return valid JSON response", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: userData.password,
+            })
 
             expect(response.headers["content-type"]).toEqual(
                 expect.stringContaining("json"),
@@ -49,9 +51,10 @@ describe("POST /auth/login", () => {
         })
 
         it("should return the id of the logged in user", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: userData.password,
+            })
 
             expect(response.body).toHaveProperty("id")
         })
@@ -61,9 +64,10 @@ describe("POST /auth/login", () => {
                 ["set-cookie"]: string[]
             }
 
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: userData.password,
+            })
 
             let accessToken = null
             let refreshToken = null
@@ -90,25 +94,28 @@ describe("POST /auth/login", () => {
 
     describe("given wrong credentials", () => {
         it("should return 400 if the password is wrong", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: "wrongpassword" })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: "wrongpassword",
+            })
 
             expect(response.statusCode).toBe(400)
         })
 
         it("should return 400 if the email does not exist", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: "nope@gmail.com", password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: "nope@gmail.com",
+                password: userData.password,
+            })
 
             expect(response.statusCode).toBe(400)
         })
 
         it("should not leak which field was wrong", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: "wrongpassword" })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: "wrongpassword",
+            })
 
             // both wrong-email and wrong-password return the same message
             expect(response.body.errors[0].msg).toBe(
@@ -119,17 +126,19 @@ describe("POST /auth/login", () => {
 
     describe("fields are missing", () => {
         it("should return 400 if email is missing", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: "", password: userData.password })
+            const response = await request(app).post("/auth/login").send({
+                email: "",
+                password: userData.password,
+            })
 
             expect(response.statusCode).toBe(400)
         })
 
         it("should return 400 if password is missing", async () => {
-            const response = await request(app)
-                .post("/auth/login")
-                .send({ email: userData.email, password: "" })
+            const response = await request(app).post("/auth/login").send({
+                email: userData.email,
+                password: "",
+            })
 
             expect(response.statusCode).toBe(400)
         })

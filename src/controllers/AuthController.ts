@@ -1,5 +1,9 @@
 import { type NextFunction, type Response } from "express"
-import type { LoginUserRequest, RegisterUserRequest } from "../types/index.ts"
+import type {
+    AuthRequest,
+    LoginUserRequest,
+    RegisterUserRequest,
+} from "../types/index.ts"
 import { UserService } from "../services/UserService.ts"
 import type { Logger } from "winston"
 import { validationResult } from "express-validator"
@@ -149,6 +153,18 @@ export default class AuthController {
 
             res.status(200).json({
                 id: user.id,
+            })
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async self(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const user = await this.userService.findById(Number(req.auth?.sub))
+            res.status(200).json({
+                ...user,
+                password: undefined,
             })
         } catch (e) {
             next(e)

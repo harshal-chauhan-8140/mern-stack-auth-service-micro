@@ -2,7 +2,10 @@ import winston from "winston"
 import { config } from "./index.ts"
 const logger = winston.createLogger({
     level: "info",
-    defaultMeta: { service: "auth-service", env: config.NODE_ENV as string },
+    defaultMeta: {
+        service: "auth-service",
+        env: config.NODE_ENV as string,
+    },
     transports: [
         new winston.transports.File({
             level: "error",
