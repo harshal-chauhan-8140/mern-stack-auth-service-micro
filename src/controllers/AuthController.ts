@@ -69,10 +69,7 @@ export default class AuthController {
             })
 
             res.status(201).json({
-                firstName,
-                lastName,
-                email,
-                password,
+                id: user.id,
             })
         } catch (e) {
             next(e)
