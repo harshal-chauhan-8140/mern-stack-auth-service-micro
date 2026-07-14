@@ -170,4 +170,55 @@ export default class AuthController {
             next(e)
         }
     }
+
+    async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const payload: JwtPayload = {
+                sub: req.auth?.sub.toString(),
+                role: req.auth?.role,
+            }
+
+            const accessToken = this.tokenService.generateAccessToken(payload)
+
+            const user = await this.userService.findById(Number(req.auth?.sub))
+
+            if (!user) {
+                const error = createHttpError(
+                    400,
+                    "User with the token could not be found",
+                )
+                next(error)
+                return
+            }
+
+            const refreshToken = await this.tokenService.generateRefreshToken(
+                payload,
+                user,
+            )
+
+            await this.tokenService.deleteRefreshToken(Number(req.auth?.jti))
+
+            this.logger.info("Refresh token has been rotated", { id: user.id })
+
+            res.cookie("accessToken", accessToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60,
+                httpOnly: true,
+            })
+
+            res.cookie("refreshToken", refreshToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60 * 24 * 365,
+                httpOnly: true,
+            })
+
+            res.status(200).json({
+                id: user.id,
+            })
+        } catch (e) {
+            next(e)
+        }
+    }
 }

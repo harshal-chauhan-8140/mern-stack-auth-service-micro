@@ -1,4 +1,5 @@
 import { type Request } from "express"
+import type { JwtPayload } from "jsonwebtoken"
 
 export interface UserRegisterData {
     firstName: string
@@ -25,5 +26,15 @@ export interface AuthRequest extends Request {
     auth?: {
         sub: number
         role: number
+        jti?: string
     }
+}
+
+export interface AuthCookie {
+    accessToken?: string
+    refreshToken?: string
+}
+
+export interface RefreshTokenPayload extends JwtPayload {
+    id: string | number
 }
