@@ -221,4 +221,31 @@ export default class AuthController {
             next(e)
         }
     }
+
+    async logout(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            await this.tokenService.deleteRefreshToken(Number(req.auth?.jti))
+            this.logger.info("Refresh token has been deleted", {
+                id: req.auth?.jti,
+            })
+            this.logger.info("User has been logged out", { id: req.auth?.sub })
+
+            // Options must match those used when the cookies were set,
+            // otherwise the browser will not remove them.
+            res.clearCookie("accessToken", {
+                domain: "localhost",
+                sameSite: "strict",
+                httpOnly: true,
+            })
+            res.clearCookie("refreshToken", {
+                domain: "localhost",
+                sameSite: "strict",
+                httpOnly: true,
+            })
+
+            return res.json({})
+        } catch (e) {
+            next(e)
+        }
+    }
 }

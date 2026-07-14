@@ -11,6 +11,8 @@ import loginValidator from "../validators/loginValidator.ts"
 import { CredentialService } from "../services/CredentialService.ts"
 import authenticate from "../middlewares/authenticate.ts"
 import validateRefreshToken from "../middlewares/validateRefreshToken.ts"
+import parseRefreshToken from "../middlewares/parseRefreshToken.ts"
+
 const router = express.Router()
 
 const userRepository = AppDataSource.getRepository(User)
@@ -41,4 +43,10 @@ router.post(
     authController.refresh.bind(authController),
 )
 
+router.post(
+    "/logout",
+    authenticate,
+    parseRefreshToken,
+    authController.logout.bind(authController),
+)
 export default router
