@@ -230,8 +230,6 @@ export default class AuthController {
             })
             this.logger.info("User has been logged out", { id: req.auth?.sub })
 
-            // Options must match those used when the cookies were set,
-            // otherwise the browser will not remove them.
             res.clearCookie("accessToken", {
                 domain: "localhost",
                 sameSite: "strict",

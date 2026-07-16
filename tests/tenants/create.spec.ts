@@ -1,6 +1,6 @@
 import request from "supertest"
 import app from "../../src/app"
-import { DataSource } from "typeorm"
+import { DataSource, Repository } from "typeorm"
 import { AppDataSource } from "../../src/config/data-source"
 import { Tenant } from "../../src/entities/Tenant"
 import * as jwksModule from "mock-jwks"
@@ -21,36 +21,27 @@ const createJWKMock: CreateJWKMock =
 
 describe("POST /tenants", () => {
     let connection: DataSource
-    let accessToken: string
+    let userRepository: Repository<User>
+
+    const userData = {
+        firstName: "harshal",
+        lastName: "chauhan",
+        email: "harshal@gmail.com",
+        password: "1234567890",
+    }
+
     let jwks: ReturnType<typeof createJWKMock>
 
     beforeAll(async () => {
         jwks = createJWKMock("http://localhost:5501")
         connection = await AppDataSource.initialize()
+        userRepository = connection.getRepository(User)
     })
 
     beforeEach(async () => {
         jwks.start()
         await connection.dropDatabase()
         await connection.synchronize()
-
-        const userData = {
-            firstName: "harshal",
-            lastName: "chauhan",
-            email: "harshal@gmail.com",
-            password: "1234567890",
-        }
-
-        const userRepository = connection.getRepository(User)
-        const data = await userRepository.save({
-            ...userData,
-            role: Roles.ADMIN,
-        })
-
-        accessToken = jwks.token({
-            sub: String(data.id),
-            role: data.role,
-        })
     })
 
     afterEach(() => {
@@ -68,6 +59,16 @@ describe("POST /tenants", () => {
                 address: "tenant address",
             }
 
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
+
             const response = await request(app)
                 .post("/tenants")
                 .set("Cookie", [`accessToken=${accessToken}`])
@@ -81,6 +82,16 @@ describe("POST /tenants", () => {
                 name: "tenant name",
                 address: "tenant address",
             }
+
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
 
             const response = await request(app)
                 .post("/tenants")
@@ -109,6 +120,35 @@ describe("POST /tenants", () => {
                 .send(tenantData)
 
             expect(response.statusCode).toBe(401)
+        })
+
+        it("should return 403 if user is not admin", async () => {
+            const tenantData = {
+                name: "tenant name",
+                address: "tenant address",
+            }
+
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.MANAGER,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
+
+            const response = await request(app)
+                .post("/tenants")
+                .set("Cookie", [`accessToken=${accessToken}`])
+                .send(tenantData)
+
+            expect(response.statusCode).toBe(403)
+
+            const tenantRepository = connection.getRepository(Tenant)
+            const tenants = await tenantRepository.find()
+
+            expect(tenants).toHaveLength(0)
         })
     })
 })

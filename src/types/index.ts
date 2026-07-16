@@ -25,7 +25,7 @@ export interface LoginUserRequest extends Request {
 export interface AuthRequest extends Request {
     auth?: {
         sub: number
-        role: number
+        role: string
         jti?: string
     }
 }
@@ -40,6 +40,11 @@ export interface RefreshTokenPayload extends JwtPayload {
 }
 
 export interface TenantRequest extends Request {
+    auth?: {
+        sub: number
+        role: string
+        jti?: string
+    }
     body: {
         name: string
         address: string
