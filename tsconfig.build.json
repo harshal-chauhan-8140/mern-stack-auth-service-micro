@@ -1,0 +1,13 @@
+// Build-only config. The base tsconfig.json keeps `noEmit` so that ts-jest and
+// editors resolve the `.ts` imports that exist on disk. Emitting needs the
+// opposite: `.ts` specifiers rewritten to the `.js` files tsc actually writes.
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "noEmit": false,
+        "rewriteRelativeImportExtensions": true
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+}
