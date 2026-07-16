@@ -7,6 +7,7 @@ import express, {
 import logger from "./config/logger.ts"
 import { HttpError } from "http-errors"
 import authRouter from "./routes/authRouter.ts"
+import tenantRouter from "./routes/tenantRouter.ts"
 import cookieParser from "cookie-parser"
 
 const app = express()
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/auth", authRouter)
+app.use("/tenants", tenantRouter)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
