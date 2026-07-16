@@ -64,4 +64,41 @@ export class UserService {
             },
         })
     }
+
+    async update(
+        id: number,
+        firstName: string,
+        lastName: string,
+        role: string,
+    ) {
+        try {
+            return await this.userRepository.update(id, {
+                firstName,
+                lastName,
+                role,
+            })
+        } catch {
+            const error = createHttpError(
+                500,
+                "Failed to update the user in database",
+            )
+            throw error
+        }
+    }
+
+    async findAll() {
+        return await this.userRepository.find({
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true,
+            },
+        })
+    }
+
+    async deleteById(id: number) {
+        return await this.userRepository.delete(id)
+    }
 }

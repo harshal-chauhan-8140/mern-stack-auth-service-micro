@@ -123,6 +123,132 @@ describe("POST /users", () => {
             expect(user?.role).toBe(Roles.MANAGER)
         })
 
-        it.todo("should return 403 if non admin user try to create a user")
+        it("should return 403 if non admin user try to create a user", async () => {
+            const userData = {
+                firstName: "harshal",
+                lastName: "chauhan",
+                email: "harshal@gmail.com",
+                password: "1234567890",
+            }
+
+            const managerAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.MANAGER,
+            })
+
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${managerAccessToken}`])
+                .send(userData)
+
+            expect(response.statusCode).toBe(403)
+
+            const userRepository = connection.getRepository(User)
+            const users = await userRepository.find()
+
+            expect(users).toHaveLength(0)
+        })
+
+        it("should return 401 if user is not authenticated", async () => {
+            const userData = {
+                firstName: "harshal",
+                lastName: "chauhan",
+                email: "harshal@gmail.com",
+                password: "1234567890",
+            }
+
+            const response = await request(app).post("/users").send(userData)
+
+            expect(response.statusCode).toBe(401)
+
+            const userRepository = connection.getRepository(User)
+            const users = await userRepository.find()
+
+            expect(users).toHaveLength(0)
+        })
+    })
+
+    describe("fields are missing", () => {
+        const adminToken = () =>
+            jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+        it("should return 400 if email field is missing", async () => {
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${adminToken()}`])
+                .send({
+                    firstName: "harshal",
+                    lastName: "chauhan",
+                    email: "",
+                    password: "1234567890",
+                })
+
+            expect(response.statusCode).toBe(400)
+
+            const userRepository = connection.getRepository(User)
+            const users = await userRepository.find()
+
+            expect(users).toHaveLength(0)
+        })
+
+        it("should return 400 if email is not a valid email", async () => {
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${adminToken()}`])
+                .send({
+                    firstName: "harshal",
+                    lastName: "chauhan",
+                    email: "not_an_email",
+                    password: "1234567890",
+                })
+
+            expect(response.statusCode).toBe(400)
+        })
+
+        it("should return 400 if firstName field is missing", async () => {
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${adminToken()}`])
+                .send({
+                    firstName: "",
+                    lastName: "chauhan",
+                    email: "harshal@gmail.com",
+                    password: "1234567890",
+                })
+
+            expect(response.statusCode).toBe(400)
+        })
+
+        it("should return 400 if password is shorter than 8 chars", async () => {
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${adminToken()}`])
+                .send({
+                    firstName: "harshal",
+                    lastName: "chauhan",
+                    email: "harshal@gmail.com",
+                    password: "1234",
+                })
+
+            expect(response.statusCode).toBe(400)
+        })
+
+        it("should return 400 if role is not a valid role", async () => {
+            const response = await request(app)
+                .post("/users")
+                .set("Cookie", [`accessToken=${adminToken()}`])
+                .send({
+                    firstName: "harshal",
+                    lastName: "chauhan",
+                    email: "harshal@gmail.com",
+                    password: "1234567890",
+                    role: "superhero",
+                })
+
+            expect(response.statusCode).toBe(400)
+        })
     })
 })

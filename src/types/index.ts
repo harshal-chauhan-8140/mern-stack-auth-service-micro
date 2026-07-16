@@ -60,6 +60,14 @@ export interface CreateUserRequest extends Request {
         lastName: string
         email: string
         password: string
+        role?: string
+    }
+}
+
+export interface UpdateUserRequest extends Request {
+    body: {
+        firstName: string
+        lastName: string
         role: string
     }
 }
