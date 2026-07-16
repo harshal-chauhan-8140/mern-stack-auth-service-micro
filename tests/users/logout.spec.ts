@@ -1,7 +1,7 @@
 import request from "supertest"
 import app from "../../src/app"
 import { DataSource } from "typeorm"
-import { AppDataSource } from "../../src/data-source"
+import { AppDataSource } from "../../src/config/data-source"
 import { User } from "../../src/entities/User"
 import { RefreshToken } from "../../src/entities/RefreshToken"
 import * as jwksModule from "mock-jwks"

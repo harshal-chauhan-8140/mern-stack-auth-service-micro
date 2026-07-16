@@ -1,7 +1,7 @@
 import app from "./app.ts"
 import { config } from "./config/index.ts"
 import logger from "./config/logger.ts"
-import { AppDataSource } from "./data-source.ts"
+import { AppDataSource } from "./config/data-source.ts"
 
 const startServer = async () => {
     try {

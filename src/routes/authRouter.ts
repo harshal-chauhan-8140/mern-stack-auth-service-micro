@@ -1,7 +1,7 @@
 import express from "express"
 import AuthController from "../controllers/AuthController.ts"
 import { UserService } from "../services/UserService.ts"
-import { AppDataSource } from "../data-source.ts"
+import { AppDataSource } from "../config/data-source.ts"
 import { User } from "../entities/User.ts"
 import logger from "../config/logger.ts"
 import registerValidator from "../validators/registerValidator.ts"

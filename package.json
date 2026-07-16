@@ -16,9 +16,9 @@
       "lint:check": "eslint .",
       "lint:fix": "eslint --fix .",
       "prepare": "husky",
-      "migration:generate": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts",
-      "migration:run": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
-      "migration:revert": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
+      "migration:generate": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:generate -d src/config/data-source.ts",
+      "migration:run": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:run -d src/config/data-source.ts",
+      "migration:revert": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:revert -d src/config/data-source.ts",
       "migration:create": "cross-env NODE_ENV=development node --import @swc-node/register/esm-register ./node_modules/typeorm/cli.js migration:create"
    },
    "devDependencies": {

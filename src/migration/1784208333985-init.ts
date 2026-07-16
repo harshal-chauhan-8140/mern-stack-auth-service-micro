@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm"
+import type { MigrationInterface, QueryRunner } from "typeorm"
 
-export class RenameTables1784207000979 implements MigrationInterface {
-    name = "RenameTables1784207000979"
+export class Init1784208333985 implements MigrationInterface {
+    name = "Init1784208333985"
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
@@ -9,6 +9,9 @@ export class RenameTables1784207000979 implements MigrationInterface {
         )
         await queryRunner.query(
             `CREATE TABLE "refreshTokens" ("id" SERIAL NOT NULL, "expiresAt" TIMESTAMP NOT NULL, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "userId" integer, CONSTRAINT "PK_c4a0078b846c2c4508473680625" PRIMARY KEY ("id"))`,
+        )
+        await queryRunner.query(
+            `CREATE TABLE "tenants" ("id" SERIAL NOT NULL, "name" character varying(30) NOT NULL, "address" character varying NOT NULL, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_53be67a04681c66b87ee27c9321" PRIMARY KEY ("id"))`,
         )
         await queryRunner.query(
             `ALTER TABLE "refreshTokens" ADD CONSTRAINT "FK_265bec4e500714d5269580a0219" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -19,6 +22,7 @@ export class RenameTables1784207000979 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "refreshTokens" DROP CONSTRAINT "FK_265bec4e500714d5269580a0219"`,
         )
+        await queryRunner.query(`DROP TABLE "tenants"`)
         await queryRunner.query(`DROP TABLE "refreshTokens"`)
         await queryRunner.query(`DROP TABLE "users"`)
     }

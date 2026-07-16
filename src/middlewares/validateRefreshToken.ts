@@ -2,7 +2,7 @@ import { expressjwt } from "express-jwt"
 import { config } from "../config/index.ts"
 import type { Request } from "express"
 import type { AuthCookie, RefreshTokenPayload } from "../types/index.ts"
-import { AppDataSource } from "../data-source.ts"
+import { AppDataSource } from "../config/data-source.ts"
 import { RefreshToken } from "../entities/RefreshToken.ts"
 import logger from "../config/logger.ts"
 
