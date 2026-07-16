@@ -7,6 +7,7 @@ import logger from "../config/logger.ts"
 import authenticate from "../middlewares/authenticate.ts"
 import { canAccess } from "../middlewares/CanAccess.ts"
 import { Roles } from "../constants/index.ts"
+import tenantValidator from "../validators/tenantValidator.ts"
 
 const router = express.Router()
 
@@ -18,7 +19,37 @@ router.post(
     "/",
     authenticate,
     canAccess([Roles.ADMIN]),
+    tenantValidator,
     tenantController.create.bind(tenantController),
+)
+
+router.patch(
+    "/:id",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    tenantValidator,
+    tenantController.update.bind(tenantController),
+)
+
+router.get(
+    "/",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    tenantController.getAll.bind(tenantController),
+)
+
+router.get(
+    "/:id",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    tenantController.getOne.bind(tenantController),
+)
+
+router.delete(
+    "/:id",
+    authenticate,
+    canAccess([Roles.ADMIN]),
+    tenantController.destroy.bind(tenantController),
 )
 
 export default router

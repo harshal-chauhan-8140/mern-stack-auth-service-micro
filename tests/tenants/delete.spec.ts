@@ -19,9 +19,10 @@ const createJWKMock: CreateJWKMock =
         ? jwksExport.default
         : jwksExport.default.default
 
-describe("POST /tenants", () => {
+describe("DELETE /tenants/:id", () => {
     let connection: DataSource
     let userRepository: Repository<User>
+    let tenantRepository: Repository<Tenant>
 
     const userData = {
         firstName: "harshal",
@@ -30,12 +31,18 @@ describe("POST /tenants", () => {
         password: "1234567890",
     }
 
+    const tenantData = {
+        name: "tenant name",
+        address: "tenant address",
+    }
+
     let jwks: ReturnType<typeof createJWKMock>
 
     beforeAll(async () => {
         jwks = createJWKMock("http://localhost:5501")
         connection = await AppDataSource.initialize()
         userRepository = connection.getRepository(User)
+        tenantRepository = connection.getRepository(Tenant)
     })
 
     beforeEach(async () => {
@@ -52,12 +59,9 @@ describe("POST /tenants", () => {
         await connection.destroy()
     })
 
-    describe("given all fields", () => {
-        it("should return 201 status code", async () => {
-            const tenantData = {
-                name: "tenant name",
-                address: "tenant address",
-            }
+    describe("given an admin user", () => {
+        it("should return 200 status code", async () => {
+            const tenant = await tenantRepository.save(tenantData)
 
             const data = await userRepository.save({
                 ...userData,
@@ -70,18 +74,15 @@ describe("POST /tenants", () => {
             })
 
             const response = await request(app)
-                .post("/tenants")
+                .delete(`/tenants/${tenant.id}`)
                 .set("Cookie", [`accessToken=${accessToken}`])
-                .send(tenantData)
+                .send()
 
-            expect(response.statusCode).toBe(201)
+            expect(response.statusCode).toBe(200)
         })
 
-        it("should create a tentant in the database", async () => {
-            const tenantData = {
-                name: "tenant name",
-                address: "tenant address",
-            }
+        it("should remove the tenant from the database", async () => {
+            const tenant = await tenantRepository.save(tenantData)
 
             const data = await userRepository.save({
                 ...userData,
@@ -93,40 +94,121 @@ describe("POST /tenants", () => {
                 role: data.role,
             })
 
-            const response = await request(app)
-                .post("/tenants")
+            await request(app)
+                .delete(`/tenants/${tenant.id}`)
                 .set("Cookie", [`accessToken=${accessToken}`])
-                .send(tenantData)
+                .send()
 
-            const tenantRepository = connection.getRepository(Tenant)
             const tenants = await tenantRepository.find()
 
-            expect(response.statusCode).toBe(201)
-
-            expect(tenants).toHaveLength(1)
-
-            expect(tenants[0].name).toBe(tenantData.name)
-            expect(tenants[0].address).toBe(tenantData.address)
+            expect(tenants).toHaveLength(0)
         })
 
-        it("should return 401 if user is not authenticated", async () => {
-            const tenantData = {
-                name: "tenant name",
-                address: "tenant address",
-            }
+        it("should only remove the requested tenant", async () => {
+            const tenant = await tenantRepository.save(tenantData)
+            await tenantRepository.save({
+                name: "other tenant",
+                address: "other address",
+            })
+
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
+
+            await request(app)
+                .delete(`/tenants/${tenant.id}`)
+                .set("Cookie", [`accessToken=${accessToken}`])
+                .send()
+
+            const tenants = await tenantRepository.find()
+
+            expect(tenants).toHaveLength(1)
+            expect(tenants[0].name).toBe("other tenant")
+        })
+
+        it("should return the id of the deleted tenant", async () => {
+            const tenant = await tenantRepository.save(tenantData)
+
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
 
             const response = await request(app)
-                .post("/tenants")
-                .send(tenantData)
+                .delete(`/tenants/${tenant.id}`)
+                .set("Cookie", [`accessToken=${accessToken}`])
+                .send()
+
+            expect((response.body as Record<string, number>).id).toBe(tenant.id)
+        })
+
+        it("should return 400 if the id param is not a number", async () => {
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
+
+            const response = await request(app)
+                .delete("/tenants/abc")
+                .set("Cookie", [`accessToken=${accessToken}`])
+                .send()
+
+            expect(response.statusCode).toBe(400)
+        })
+
+        it("should return 404 if the tenant does not exist", async () => {
+            const data = await userRepository.save({
+                ...userData,
+                role: Roles.ADMIN,
+            })
+
+            const accessToken = jwks.token({
+                sub: String(data.id),
+                role: data.role,
+            })
+
+            const response = await request(app)
+                .delete("/tenants/999")
+                .set("Cookie", [`accessToken=${accessToken}`])
+                .send()
+
+            expect(response.statusCode).toBe(404)
+        })
+    })
+
+    describe("given a non admin user", () => {
+        it("should return 401 if user is not authenticated", async () => {
+            const tenant = await tenantRepository.save(tenantData)
+
+            const response = await request(app)
+                .delete(`/tenants/${tenant.id}`)
+                .send()
 
             expect(response.statusCode).toBe(401)
+
+            const tenants = await tenantRepository.find()
+
+            expect(tenants).toHaveLength(1)
         })
 
         it("should return 403 if user is not admin", async () => {
-            const tenantData = {
-                name: "tenant name",
-                address: "tenant address",
-            }
+            const tenant = await tenantRepository.save(tenantData)
 
             const data = await userRepository.save({
                 ...userData,
@@ -139,112 +221,15 @@ describe("POST /tenants", () => {
             })
 
             const response = await request(app)
-                .post("/tenants")
+                .delete(`/tenants/${tenant.id}`)
                 .set("Cookie", [`accessToken=${accessToken}`])
-                .send(tenantData)
+                .send()
 
             expect(response.statusCode).toBe(403)
 
-            const tenantRepository = connection.getRepository(Tenant)
             const tenants = await tenantRepository.find()
 
-            expect(tenants).toHaveLength(0)
-        })
-    })
-
-    describe("fields are missing", () => {
-        it("should return 400 if name field is missing", async () => {
-            const data = await userRepository.save({
-                ...userData,
-                role: Roles.ADMIN,
-            })
-
-            const accessToken = jwks.token({
-                sub: String(data.id),
-                role: data.role,
-            })
-
-            const response = await request(app)
-                .post("/tenants")
-                .set("Cookie", [`accessToken=${accessToken}`])
-                .send({ name: "", address: "tenant address" })
-
-            expect(response.statusCode).toBe(400)
-
-            const tenantRepository = connection.getRepository(Tenant)
-            const tenants = await tenantRepository.find()
-
-            expect(tenants).toHaveLength(0)
-        })
-
-        it("should return 400 if address field is missing", async () => {
-            const data = await userRepository.save({
-                ...userData,
-                role: Roles.ADMIN,
-            })
-
-            const accessToken = jwks.token({
-                sub: String(data.id),
-                role: data.role,
-            })
-
-            const response = await request(app)
-                .post("/tenants")
-                .set("Cookie", [`accessToken=${accessToken}`])
-                .send({ name: "tenant name", address: "" })
-
-            expect(response.statusCode).toBe(400)
-
-            const tenantRepository = connection.getRepository(Tenant)
-            const tenants = await tenantRepository.find()
-
-            expect(tenants).toHaveLength(0)
-        })
-
-        it("should return 400 if name is longer than 30 chars", async () => {
-            const data = await userRepository.save({
-                ...userData,
-                role: Roles.ADMIN,
-            })
-
-            const accessToken = jwks.token({
-                sub: String(data.id),
-                role: data.role,
-            })
-
-            const response = await request(app)
-                .post("/tenants")
-                .set("Cookie", [`accessToken=${accessToken}`])
-                .send({ name: "a".repeat(31), address: "tenant address" })
-
-            expect(response.statusCode).toBe(400)
-
-            const tenantRepository = connection.getRepository(Tenant)
-            const tenants = await tenantRepository.find()
-
-            expect(tenants).toHaveLength(0)
-        })
-
-        it("should trim the name field", async () => {
-            const data = await userRepository.save({
-                ...userData,
-                role: Roles.ADMIN,
-            })
-
-            const accessToken = jwks.token({
-                sub: String(data.id),
-                role: data.role,
-            })
-
-            await request(app)
-                .post("/tenants")
-                .set("Cookie", [`accessToken=${accessToken}`])
-                .send({ name: "  tenant name  ", address: "tenant address" })
-
-            const tenantRepository = connection.getRepository(Tenant)
-            const tenants = await tenantRepository.find()
-
-            expect(tenants[0].name).toBe("tenant name")
+            expect(tenants).toHaveLength(1)
         })
     })
 })
