@@ -6,6 +6,7 @@ import express, {
 } from "express"
 import logger from "./config/logger.ts"
 import { HttpError } from "http-errors"
+import userRouter from "./routes/userRouter.ts"
 import authRouter from "./routes/authRouter.ts"
 import tenantRouter from "./routes/tenantRouter.ts"
 import cookieParser from "cookie-parser"
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/auth", authRouter)
+app.use("/users", userRouter)
 app.use("/tenants", tenantRouter)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

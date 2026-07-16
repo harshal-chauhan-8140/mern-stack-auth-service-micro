@@ -17,6 +17,7 @@ export class UserService {
         lastName: string,
         email: string,
         password: string,
+        role: string = Roles.CUSTOMER,
     ) {
         const user = await this.userRepository.findOne({
             where: {
@@ -37,7 +38,7 @@ export class UserService {
                 lastName,
                 email,
                 password: hashedPassword,
-                role: Roles.CUSTOMER,
+                role,
             })
         } catch {
             const error = createHttpError(
