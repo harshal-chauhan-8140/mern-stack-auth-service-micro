@@ -1,9 +1,16 @@
-import express, { type Request, type Response } from "express"
+import express from "express"
+import { TenantController } from "../controllers/TenantController.ts"
+import { TenantService } from "../services/TenantService.ts"
+import { AppDataSource } from "../config/data-source.ts"
+import { Tenant } from "../entities/Tenant.ts"
+import logger from "../config/logger.ts"
 
 const router = express.Router()
 
-router.post("/", (req: Request, res: Response) => {
-    return res.status(201).json()
-})
+const tenantRepository = AppDataSource.getRepository(Tenant)
+const tenantService = new TenantService(tenantRepository, logger)
+const tenantController = new TenantController(tenantService, logger)
+
+router.post("/", tenantController.create.bind(tenantController))
 
 export default router

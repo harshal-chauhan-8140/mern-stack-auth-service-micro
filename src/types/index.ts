@@ -38,3 +38,10 @@ export interface AuthCookie {
 export interface RefreshTokenPayload extends JwtPayload {
     id: string | number
 }
+
+export interface TenantRequest extends Request {
+    body: {
+        name: string
+        address: string
+    }
+}
