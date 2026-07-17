@@ -42,3 +42,5 @@ Example layering:
 2. "Write plain code in services" means **framework-agnostic domain logic** — not
    raw SQL. Raw SQL in a service would re-couple it to Postgres and defeat the
    purpose. Raw _logic_, yes; raw _queries_, no.
+
+Making changes to test branch rules
