@@ -11,6 +11,20 @@ jobs:
   build-and-test:
     name: Build The Project
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: mernstack_auth_service_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -29,11 +43,11 @@ jobs:
       - name: Test And Coverage
         run: npm run test
         env:
-          DB_HOST: ${{ secrets.TEST_DB_HOST }}
-          DB_PORT: ${{ secrets.TEST_DB_PORT }}
-          DB_USERNAME: ${{ secrets.TEST_DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          DB_NAME: ${{ secrets.TEST_DB_NAME }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          DB_NAME: mernstack_auth_service_test
           REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
           JWKS_URI: ${{ secrets.JWKS_URI }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
