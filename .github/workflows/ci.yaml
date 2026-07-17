@@ -1,88 +1,88 @@
 name: CI
 on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
 
 jobs:
-  build-and-test:
-    name: Build The Project
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
+    build-and-test:
+        name: Build The Project
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: root
+                    POSTGRES_PASSWORD: root
+                    POSTGRES_DB: mernstack_auth_service_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Run Eslint
+              run: npm run lint:fix
+
+            - name: Test And Coverage
+              run: npm run test
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_PORT: 5432
+                  DB_USERNAME: root
+                  DB_PASSWORD: root
+                  DB_NAME: mernstack_auth_service_test
+                  REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+                  JWKS_URI: ${{ secrets.JWKS_URI }}
+                  PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+                  PORT: ${{ secrets.PORT }}
+                  PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+
+            - name: Build-ts
+              run: npm run build
+
+            - name: Sonar Cloud Scan
+              uses: SonarSource/sonarqube-scan-action@v5
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    build-and-push-docker:
+        name: Build And Push Docker Image
+        needs: build-and-test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: root
-          POSTGRES_DB: mernstack_auth_service_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
+            IMAGE_NAME: mernstack_auth_service
+            IMAGE_TAG: build-${{ github.run_number }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
+            - name: Log Into Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Install Dependencies
-        run: npm ci
+            - name: Build Docker Image
+              run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f docker/prod/Dockerfile .
 
-      - name: Run Eslint
-        run: npm run lint:fix
-
-      - name: Test And Coverage
-        run: npm run test
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          DB_NAME: mernstack_auth_service_test
-          REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
-          JWKS_URI: ${{ secrets.JWKS_URI }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PORT: ${{ secrets.PORT }}
-          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
-
-      - name: Build-ts
-        run: npm run build
-
-      - name: Sonar Cloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  build-and-push-docker:
-    name: Build And Push Docker Image
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    env:
-      IMAGE_NAME: mernstack_auth_service
-      IMAGE_TAG: build-${{ github.run_number }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Log Into Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f docker/prod/Dockerfile .
-
-      - name: Push Docker Image To Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            - name: Push Docker Image To Docker Hub
+              run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
