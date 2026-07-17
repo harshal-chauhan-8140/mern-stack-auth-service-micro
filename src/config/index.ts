@@ -17,6 +17,14 @@ function requireEnv(key: string): string {
     return value
 }
 
+function requirePem(key: string): string {
+    const value = requireEnv(key).replace(/\\n/g, "\n")
+    if (!value.startsWith("-----BEGIN")) {
+        throw new Error(`Environment variable ${key} is not a valid PEM key`)
+    }
+    return value
+}
+
 export const config = {
     PORT: requireEnv("PORT"),
     NODE_ENV: requireEnv("NODE_ENV"),
@@ -27,6 +35,6 @@ export const config = {
     DB_NAME: requireEnv("DB_NAME"),
     REFRESH_TOKEN_SECRET: requireEnv("REFRESH_TOKEN_SECRET"),
     JWKS_URI: requireEnv("JWKS_URI"),
-    PRIVATE_KEY: requireEnv("PRIVATE_KEY"),
-    PUBLIC_KEY: requireEnv("PUBLIC_KEY"),
+    PRIVATE_KEY: requirePem("PRIVATE_KEY"),
+    PUBLIC_KEY: requirePem("PUBLIC_KEY"),
 }
