@@ -38,6 +38,7 @@ jobs:
           JWKS_URI: ${{ secrets.JWKS_URI }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           PORT: ${{ secrets.PORT }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
 
       - name: Build-ts
         run: npm run build
