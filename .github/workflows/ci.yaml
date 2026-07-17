@@ -18,7 +18,7 @@ jobs:
         run: npm ci
 
       - name: Run Eslint
-        run: npm run lint
+        run: npm run lint:fix
 
       - name: Test And Coverage
         run: npm run test
