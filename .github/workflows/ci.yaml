@@ -37,6 +37,7 @@ jobs:
           REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
           JWKS_URI: ${{ secrets.JWKS_URI }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PORT: ${{ secrets.PORT }}
 
       - name: Build-ts
         run: npm run build
