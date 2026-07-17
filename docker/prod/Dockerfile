@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:18-alpine as production
+FROM node:26-alpine AS production
 
 ENV NODE_ENV=production
 
@@ -21,6 +21,10 @@ COPY package*.json ./
 RUN npm ci --ignore-scripts
 
 COPY --from=builder /app/dist ./
+
+# Static assets (served via express.static), including the JWKS the auth
+# middleware fetches to verify access tokens. Not part of the compiled dist.
+COPY --from=builder /app/public ./public
 
 EXPOSE 5500
 
