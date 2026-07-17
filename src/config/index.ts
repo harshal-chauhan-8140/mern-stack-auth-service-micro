@@ -27,4 +27,6 @@ export const config = {
     DB_NAME: requireEnv("DB_NAME"),
     REFRESH_TOKEN_SECRET: requireEnv("REFRESH_TOKEN_SECRET"),
     JWKS_URI: requireEnv("JWKS_URI"),
+    PRIVATE_KEY: requireEnv("PRIVATE_KEY"),
+    PUBLIC_KEY: requireEnv("PUBLIC_KEY"),
 }
