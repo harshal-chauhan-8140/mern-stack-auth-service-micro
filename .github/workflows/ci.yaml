@@ -53,6 +53,10 @@ jobs:
                   PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
                   PORT: ${{ secrets.PORT }}
                   PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+                  ADMIN_FIRST_NAME: ${{ secrets.ADMIN_FIRST_NAME }}
+                  ADMIN_LAST_NAME: ${{ secrets.ADMIN_LAST_NAME }}
+                  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+                  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
             - name: Build-ts
               run: npm run build
