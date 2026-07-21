@@ -144,3 +144,4 @@ vite.config.ts.timestamp-*
 
 certs
 authentication-jwt.md
+docker-run.md

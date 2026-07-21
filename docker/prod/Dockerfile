@@ -22,8 +22,6 @@ RUN npm ci --ignore-scripts
 
 COPY --from=builder /app/dist ./
 
-# Static assets (served via express.static), including the JWKS the auth
-# middleware fetches to verify access tokens. Not part of the compiled dist.
 COPY --from=builder /app/public ./public
 
 EXPOSE 5500
