@@ -2,11 +2,15 @@ import app from "./app.ts"
 import { config } from "./config/index.ts"
 import logger from "./config/logger.ts"
 import { AppDataSource } from "./config/data-source.ts"
+import { seedAdminUser } from "./config/seedAdmin.ts"
 
 const startServer = async () => {
     try {
         await AppDataSource.initialize()
         logger.info("Database connected successfully")
+
+        await seedAdminUser()
+
         app.listen(config.PORT, () => {
             logger.info(
                 `Server is running on port ${config.PORT} in ${config.NODE_ENV} mode`,

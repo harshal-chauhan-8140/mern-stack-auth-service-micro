@@ -37,4 +37,8 @@ export const config = {
     JWKS_URI: requireEnv("JWKS_URI"),
     PRIVATE_KEY: requirePem("PRIVATE_KEY"),
     PUBLIC_KEY: requirePem("PUBLIC_KEY"),
+    ADMIN_FIRST_NAME: requireEnv("ADMIN_FIRST_NAME"),
+    ADMIN_LAST_NAME: requireEnv("ADMIN_LAST_NAME"),
+    ADMIN_EMAIL: requireEnv("ADMIN_EMAIL"),
+    ADMIN_PASSWORD: requireEnv("ADMIN_PASSWORD"),
 }
