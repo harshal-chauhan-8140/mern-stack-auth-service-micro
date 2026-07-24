@@ -3,9 +3,17 @@ import app from "../../src/app"
 import { DataSource, Repository } from "typeorm"
 import { AppDataSource } from "../../src/config/data-source"
 import { User } from "../../src/entities/User"
+import { Tenant } from "../../src/entities/Tenant"
 import { Roles } from "../../src/constants"
 import * as jwksModule from "mock-jwks"
 import type { JWKSMock } from "mock-jwks"
+
+interface PaginatedUsers {
+    currentPage: number
+    perPage: number
+    total: number
+    data: User[]
+}
 
 type CreateJWKMock = (host: string, path?: string) => JWKSMock
 
@@ -66,7 +74,7 @@ describe("GET /users", () => {
             expect(response.statusCode).toBe(200)
         })
 
-        it("should return all the users", async () => {
+        it("should return all the users inside a data array", async () => {
             await userRepository.save([
                 { ...userData, email: "first@gmail.com" },
                 { ...userData, email: "second@gmail.com" },
@@ -82,11 +90,11 @@ describe("GET /users", () => {
                 .set("Cookie", [`accessToken=${adminAccessToken}`])
                 .send()
 
-            const users = response.body as User[]
+            const body = response.body as PaginatedUsers
 
-            expect(users).toHaveLength(2)
-            expect(users[0].email).toBe("first@gmail.com")
-            expect(users[1].email).toBe("second@gmail.com")
+            expect(body.data).toHaveLength(2)
+            expect(body.data[0].email).toBe("second@gmail.com")
+            expect(body.data[1].email).toBe("first@gmail.com")
         })
 
         it("should not return the password field", async () => {
@@ -102,9 +110,34 @@ describe("GET /users", () => {
                 .set("Cookie", [`accessToken=${adminAccessToken}`])
                 .send()
 
-            const users = response.body as User[]
+            const body = response.body as PaginatedUsers
 
-            expect(users[0]).not.toHaveProperty("password")
+            expect(body.data[0]).not.toHaveProperty("password")
+        })
+
+        it("should include the tenant relation for each user", async () => {
+            const tenantRepository = connection.getRepository(Tenant)
+            const tenant = await tenantRepository.save({
+                name: "tenant name",
+                address: "tenant address",
+            })
+            await userRepository.save({ ...userData, tenant })
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.data[0]).toHaveProperty("tenant")
+            expect(body.data[0].tenant).toBeTruthy()
+            expect(body.data[0].tenant?.id).toBe(tenant.id)
         })
 
         it("should return an empty list if there are no users", async () => {
@@ -118,8 +151,275 @@ describe("GET /users", () => {
                 .set("Cookie", [`accessToken=${adminAccessToken}`])
                 .send()
 
+            const body = response.body as PaginatedUsers
+
             expect(response.statusCode).toBe(200)
-            expect(response.body as User[]).toHaveLength(0)
+            expect(body.data).toHaveLength(0)
+            expect(body.total).toBe(0)
+        })
+
+        it("should return pagination metadata in the response", async () => {
+            await userRepository.save([
+                { ...userData, email: "first@gmail.com" },
+                { ...userData, email: "second@gmail.com" },
+            ])
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?currentPage=1&perPage=10")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.currentPage).toBe(1)
+            expect(body.perPage).toBe(10)
+            expect(body.total).toBe(2)
+            expect(body.data).toHaveLength(2)
+        })
+
+        it("should only return perPage users per page", async () => {
+            await userRepository.save([
+                { ...userData, email: "first@gmail.com" },
+                { ...userData, email: "second@gmail.com" },
+                { ...userData, email: "third@gmail.com" },
+            ])
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?currentPage=1&perPage=2")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(3)
+            expect(body.data).toHaveLength(2)
+            expect(body.data[0].email).toBe("third@gmail.com")
+            expect(body.data[1].email).toBe("second@gmail.com")
+        })
+
+        it("should return the requested page of users", async () => {
+            await userRepository.save([
+                { ...userData, email: "first@gmail.com" },
+                { ...userData, email: "second@gmail.com" },
+                { ...userData, email: "third@gmail.com" },
+            ])
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?currentPage=2&perPage=2")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.currentPage).toBe(2)
+            expect(body.data).toHaveLength(1)
+            expect(body.data[0].email).toBe("first@gmail.com")
+        })
+
+        it("should default to page 1 with a default page size when no query is provided", async () => {
+            await userRepository.save({ ...userData })
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.currentPage).toBe(1)
+            expect(body.perPage).toBe(6)
+        })
+    })
+
+    describe("given a search or role filter", () => {
+        const searchUsers = [
+            {
+                firstName: "Alice",
+                lastName: "Anderson",
+                email: "alice@gmail.com",
+                password: "1234567890",
+                role: Roles.ADMIN,
+            },
+            {
+                firstName: "Bob",
+                lastName: "Brown",
+                email: "bob@gmail.com",
+                password: "1234567890",
+                role: Roles.MANAGER,
+            },
+            {
+                firstName: "Carol",
+                lastName: "Clark",
+                email: "carol@gmail.com",
+                password: "1234567890",
+                role: Roles.CUSTOMER,
+            },
+        ]
+
+        it("should return users matching the q search on first name", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?q=Alice")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data).toHaveLength(1)
+            expect(body.data[0].email).toBe("alice@gmail.com")
+        })
+
+        it("should match the q search on last name case-insensitively", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?q=brown")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data[0].email).toBe("bob@gmail.com")
+        })
+
+        it("should match the q search on a full name", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?q=Carol Clark")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data[0].email).toBe("carol@gmail.com")
+        })
+
+        it("should match the q search on email", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?q=bob@gmail")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data[0].email).toBe("bob@gmail.com")
+        })
+
+        it("should return only users with the requested role", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get(`/users?role=${Roles.MANAGER}`)
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data).toHaveLength(1)
+            expect(body.data[0].role).toBe(Roles.MANAGER)
+            expect(body.data[0].email).toBe("bob@gmail.com")
+        })
+
+        it("should combine the q search and role filter", async () => {
+            await userRepository.save([
+                ...searchUsers.map((user) => ({ ...user })),
+                {
+                    firstName: "Alice",
+                    lastName: "Adams",
+                    email: "alice.manager@gmail.com",
+                    password: "1234567890",
+                    role: Roles.MANAGER,
+                },
+            ])
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get(`/users?q=Alice&role=${Roles.MANAGER}`)
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(1)
+            expect(body.data).toHaveLength(1)
+            expect(body.data[0].email).toBe("alice.manager@gmail.com")
+        })
+
+        it("should return all users when q and role are empty", async () => {
+            await userRepository.save(searchUsers.map((user) => ({ ...user })))
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get("/users?q=&role=")
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as PaginatedUsers
+
+            expect(body.total).toBe(3)
+            expect(body.data).toHaveLength(3)
         })
     })
 

@@ -3,6 +3,7 @@ import app from "../../src/app"
 import { DataSource, Repository } from "typeorm"
 import { AppDataSource } from "../../src/config/data-source"
 import { User } from "../../src/entities/User"
+import { Tenant } from "../../src/entities/Tenant"
 import { Roles } from "../../src/constants"
 import * as jwksModule from "mock-jwks"
 import type { JWKSMock } from "mock-jwks"
@@ -21,6 +22,7 @@ const createJWKMock: CreateJWKMock =
 describe("GET /users/:id", () => {
     let connection: DataSource
     let userRepository: Repository<User>
+    let tenantRepository: Repository<Tenant>
     let jwks: ReturnType<typeof createJWKMock>
 
     const userData = {
@@ -31,10 +33,16 @@ describe("GET /users/:id", () => {
         role: Roles.CUSTOMER,
     }
 
+    const tenantData = {
+        name: "tenant name",
+        address: "tenant address",
+    }
+
     beforeAll(async () => {
         jwks = createJWKMock("http://localhost:5501")
         connection = await AppDataSource.initialize()
         userRepository = connection.getRepository(User)
+        tenantRepository = connection.getRepository(Tenant)
     })
 
     beforeEach(async () => {
@@ -102,6 +110,27 @@ describe("GET /users/:id", () => {
                 .send()
 
             expect(response.body as User).not.toHaveProperty("password")
+        })
+
+        it("should return the tenant relation for the user", async () => {
+            const tenant = await tenantRepository.save({ ...tenantData })
+            const user = await userRepository.save({ ...userData, tenant })
+
+            const adminAccessToken = jwks.token({
+                sub: "1",
+                role: Roles.ADMIN,
+            })
+
+            const response = await request(app)
+                .get(`/users/${user.id}`)
+                .set("Cookie", [`accessToken=${adminAccessToken}`])
+                .send()
+
+            const body = response.body as User
+
+            expect(body.tenant).toBeTruthy()
+            expect(body.tenant.id).toBe(tenant.id)
+            expect(body.tenant.name).toBe(tenantData.name)
         })
 
         it("should return the requested user when many exist", async () => {
