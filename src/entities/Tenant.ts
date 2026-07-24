@@ -2,7 +2,6 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from "typeorm"
@@ -19,9 +18,6 @@ export class Tenant {
 
     @Column()
     address!: string
-
-    @ManyToOne(() => Tenant)
-    tenant!: Tenant
 
     @UpdateDateColumn()
     updatedAt!: number
