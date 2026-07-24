@@ -37,7 +37,10 @@ describe("seedAdminUser", () => {
         await seedAdminUser()
 
         const userRepository = connection.getRepository(User)
-        const users = await userRepository.find()
+        const users = await userRepository
+            .createQueryBuilder("user")
+            .addSelect("user.password")
+            .getMany()
 
         expect(users[0].password).not.toBe(config.ADMIN_PASSWORD)
         const matches = await bcrypt.compare(

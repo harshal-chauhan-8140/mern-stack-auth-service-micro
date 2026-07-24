@@ -8,6 +8,7 @@ import { UserController } from "../controllers/UserController.ts"
 import { UserService } from "../services/UserService.ts"
 import createUserValidator from "../validators/createUserValidator.ts"
 import updateUserValidator from "../validators/updateUserValidator.ts"
+import listUsersValidator from "../validators/listUsersValidator.ts"
 
 const router = express.Router()
 
@@ -35,6 +36,7 @@ router.get(
     "/",
     authenticate,
     canAccess([Roles.ADMIN]),
+    listUsersValidator,
     userController.getAll.bind(userController),
 )
 

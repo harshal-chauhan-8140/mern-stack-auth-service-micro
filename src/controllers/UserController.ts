@@ -1,7 +1,11 @@
 import type { Request, Response, NextFunction } from "express"
 import type { UserService } from "../services/UserService.ts"
-import type { CreateUserRequest, UpdateUserRequest } from "../types/index.ts"
-import { validationResult } from "express-validator"
+import type {
+    CreateUserRequest,
+    UpdateUserRequest,
+    UserQueryParams,
+} from "../types/index.ts"
+import { matchedData, validationResult } from "express-validator"
 import createHttpError from "http-errors"
 
 export class UserController {
@@ -70,10 +74,20 @@ export class UserController {
     }
 
     async getAll(req: Request, res: Response, next: NextFunction) {
-        try {
-            const users = await this.userService.findAll()
+        const validatedQuery = matchedData(req, {
+            onlyValidData: false,
+        }) as UserQueryParams
 
-            return res.json(users)
+        try {
+            const [users, count] =
+                await this.userService.findAll(validatedQuery)
+
+            return res.json({
+                currentPage: validatedQuery.currentPage,
+                perPage: validatedQuery.perPage,
+                total: count,
+                data: users,
+            })
         } catch (err) {
             return next(err)
         }
