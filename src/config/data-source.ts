@@ -6,6 +6,8 @@ import { RefreshToken } from "../entities/RefreshToken.ts"
 import { Tenant } from "../entities/Tenant.ts"
 import { Init1784208333985 } from "../migration/1784208333985-init.ts"
 import { AddForiegnKeyTenantIdInUsersTable1784208864968 } from "../migration/1784208864968-add_foriegn_key_tenantId_in_users_table.ts"
+import { AddTenantIdToUsers1784923809611 } from "../migration/1784923809611-AddTenantIdToUsers.ts"
+import { FixTenantSelfRelationAndRefreshTokenCascade1784924236264 } from "../migration/1784924236264-FixTenantSelfRelationAndRefreshTokenCascade.ts"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -23,6 +25,8 @@ export const AppDataSource = new DataSource({
             : [
                   Init1784208333985,
                   AddForiegnKeyTenantIdInUsersTable1784208864968,
+                  AddTenantIdToUsers1784923809611,
+                  FixTenantSelfRelationAndRefreshTokenCascade1784924236264,
               ],
     subscribers: [],
 })
